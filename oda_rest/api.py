@@ -6,9 +6,9 @@ logger.setLevel(logging.DEBUG)
 
 class OdaProject(object):
 
-    def __init__(self, hostname, shortname, clone=False):
+    def __init__(self, url, shortname, clone=False):
         self.session = requests.session()
-        self.url = "http://%s/odaweb/api" % hostname
+        self.url = "%s/odaweb/api" % url
 
         if clone:
             logger.debug("Cloning project %s" % shortname)
@@ -21,16 +21,10 @@ class OdaProject(object):
         else:
             self.shortname = shortname
 
-        if not self.isOwner():
+        if not self._isOwner():
             raise Exception("You do not have access to this project.")
 
-        r = self.session.get("%s/load?short_name=%s&revision=0" %
-                             (self.url, self.shortname))
-
-        if not r.ok:
-            raise Exception("Failed to load project")
-
-    def isOwner(self):
+    def _isOwner(self):
 
         r = self.session.get("%s/masters/%s/is_owner/" % (self.url,
                                                        self.shortname))
@@ -40,21 +34,44 @@ class OdaProject(object):
 
         return r.json()
 
-    def Functions(self):
-        r = self.session.get("%s/functions/?short_name=%s&revision=0" % (
-            self.url, self.shortname))
+    def _fetch(self, kind):
+        r = self.session.get("%s/%s/?short_name=%s&revision=0" % (
+            self.url, kind, self.shortname))
 
         if r.ok:
             return r.json()
         else:
-            raise Exception("Failed to retrieve functions: %s" % r.content.decode())
+            raise Exception("Failed to retrieve %s: %s" %
+                            (kind, r.content.decode()))
+
+    def _push(self, kind, params):
+
+        params['short_name'] = self.shortname
+        params['revision'] = 0
+        url = "%s/%s/" % (self.url, kind)
+        headers = {
+            'X-CSRFToken': self.session.cookies['csrftoken']
+        }
+        r = self.session.post(url, json=params,
+                              headers=headers)
+
+        if not r.ok:
+            raise Exception("Failed to create %s" % kind)
+
+        return r.json()
+
+    def Functions(self):
+        return self._fetch('functions')
 
     def Sections(self):
-        r = self.session.get("%s/sections/?short_name=%s&revision=0" % (
-            self.url, self.shortname))
+        return self._fetch('sections')
 
-        if r.ok:
-            return r.json()
-        else:
-            raise Exception("Failed to retrieve sections: %s" %
-                            r.content.decode())
+    def Comments(self):
+        return self._fetch('comments')
+
+    def CreateComment(self, offset, comment):
+        params = {
+            'offset': offset,
+            'comment': comment,
+        }
+        return self._push('comments', params)
