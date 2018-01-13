@@ -1,8 +1,7 @@
 import unittest
-import requests
+from oda_rest.api import OdaProject
 
 class MkdirTestCase(unittest.TestCase):
+
     def setUp(self):
-        self.session = requests.session()
-        self.shortname = self.session.get(
-            'http://localhost:8000/odaweb/api/masters/mkdir/clone/').json()
+        self.project = OdaProject("localhost:8000", 'mkdir', clone=True)
