@@ -6,7 +6,7 @@ The library provides read and write access to the internal data structures of th
 
 ## example use:
 
-### example: list function names
+### example: List Function Names
 
 In this example, we list the effective addresses and names of functions:
 
@@ -21,4 +21,17 @@ for f in project.Functions():
 
 Note that in the example above, we clone an existing project instead of using one that we already created through the website.
 
+### Example: Print Disassembly Listing of .text section
 
+```
+#!/usr/bin/python3
+from oda_rest.api import OdaProject
+
+project = OdaProject("http://localhost:8000", 'mkdir', clone=True)
+
+for s in project.Sections():
+    if s.name == '.text':
+        dus = project.DisplayUnits(s.vma, 10)
+        for du in dus:
+            print("%s:%s %s" % (du.section_name, du.vma, du.instStr))
+```
