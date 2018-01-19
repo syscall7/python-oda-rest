@@ -11,6 +11,7 @@ The library provides read and write access to the internal data structures of th
 In this example, we list the effective addresses and names of functions:
 
 ```
+#!/usr/bin/python3
 from oda_rest.api import OdaProject
 
 project = OdaProject("http://onlinedisassembler.com", 'mkdir', clone=True)
