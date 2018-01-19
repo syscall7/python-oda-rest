@@ -23,6 +23,8 @@ Note that in the example above, we clone an existing project instead of using on
 
 ### Example: Print Disassembly Listing of .text section
 
+The example below prints the first 10 instructions of the .text section.
+
 ```
 #!/usr/bin/python3
 from oda_rest.api import OdaProject
