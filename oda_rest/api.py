@@ -10,7 +10,12 @@ Section = namedtuple('Section', ['name', 'vma', 'size', 'flags'])
 Comment = namedtuple('Section', ['vma', 'comment'])
 User = namedtuple('User', ['username', 'email', 'is_lazy_user'])
 Operation = namedtuple('Operation', ['datetime', 'user', 'name', 'desc'])
-
+DisplayUnit = namedtuple('DisplayUnit', ['section_name', 'vma', 'rawBytes',
+                                         'instStr', 'branch', 'branch_label',
+                                         'opcode', 'operands', 'stringRef',
+                                         'branchRef', 'targetRef',
+                                         'crossRef', 'isBranch',
+                                         'isFunction', 'labelName', 'isCode'])
 class OdaProject(object):
 
     def __init__(self, url, shortname, clone=False):
@@ -41,9 +46,15 @@ class OdaProject(object):
         if not can_edit:
             raise Exception("You do not have access to this project.")
 
-    def _fetch(self, kind):
-        r = self.session.get("%s/%s/?short_name=%s&revision=0" % (
-            self.url, kind, self.shortname))
+    def _fetch(self, kind, **kwargs):
+
+        url = "%s/%s/?short_name=%s&revision=0" % \
+                ( self.url, kind, self.shortname)
+
+        for p,v in kwargs.items():
+            url += "&%s=%s" % (p,v)
+
+        r = self.session.get(url)
 
         if r.ok:
             return r.json()
@@ -78,6 +89,10 @@ class OdaProject(object):
 
     def Operations(self):
         return [Operation(**o) for o in self._fetch('operations')]
+
+    def DisplayUnits(self, vma, count):
+        return [DisplayUnit(**du) for du in self._fetch('displayunits',
+                                                        addr=vma, units=count)]
 
     def CreateComment(self, vma, comment):
         params = {
