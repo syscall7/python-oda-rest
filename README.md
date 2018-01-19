@@ -4,9 +4,9 @@ python-oda-rest is a library for scripting [ODA](https://onlinedisassembler.com)
 
 The library provides read and write access to the internal data structures of the project database. Some day we hope to wrap this library with an IDAPython-compatible library called ODAPython.
 
-## example use:
+## Example Usage
 
-### example: List Function Names
+### Example: List Function Names
 
 In this example, we list the effective addresses and names of functions:
 
